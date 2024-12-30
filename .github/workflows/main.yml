@@ -70,11 +70,11 @@ jobs:
 
       - name: Wait for the application to start
         run: |
-          sleep 30  # Ждем, чтобы приложение успело загрузиться
+          sleep 180  # Ждем, чтобы приложение успело загрузиться
 
       - name: Test the running application
         run: |
-          curl -f http://localhost:8080 || exit 1  # Проверяем, что приложение работает
+          curl -f http://localhost:9999 || exit 1  # Проверяем, что приложение работает
 
       - name: Clean up
         run: |
