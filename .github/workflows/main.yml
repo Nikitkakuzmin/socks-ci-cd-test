@@ -26,7 +26,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-          
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -47,6 +47,7 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle
+
       - name: Run tests
         run: ./gradlew test
 
@@ -62,33 +63,23 @@ jobs:
           name: socks-service-jar
           path: build/libs/*.jar
 
-      - name: Build Docker image
+      - name: Start Spring Boot application
         run: |
-          # Создаём Docker образ
-          docker build -t my-app .
+          java -jar build/libs/socks-backspark.jar &
+          echo "Spring Boot application started."
 
-      - name: Push Docker image to Docker Hub
+      - name: Wait for the application to start
         run: |
-          # Логинимся в Docker Hub
-          echo ${{ secrets.DOCKER_USERNAME }} | docker login --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          docker tag my-app nikitkamzgb/socks-backspark-iso:latest
-          docker push nikitkamzgb/socks-backspark-iso:latest
+          sleep 30  # Ждем, чтобы приложение успело загрузиться
 
-      - name: Deploy to Docker container
-        if: success()
+      - name: Test the running application
         run: |
-          # Останавливаем старый контейнер, если он существует
-          docker stop socks-service-container || true
-          docker rm socks-service-container || true
-          
-          # Запускаем новый контейнер с последним образом
-          docker run -d -p 8889:8888 --name socks-service-container --link socks-db nikitkamzgb/socks-backspark-iso:latest
+          curl -f http://localhost:8080 || exit 1  # Проверяем, что приложение работает
 
-      - name: Clean up Docker images
+      - name: Clean up
         run: |
-          # Очищаем старые Docker образы
-          docker rmi my-app || true
-          docker rmi nikitkamzgb/socks-backspark-iso:latest || true
+          pkill -f "java -jar build/libs/socks-backspark.jar"  # Убиваем процесс приложения
+
 
 
 
