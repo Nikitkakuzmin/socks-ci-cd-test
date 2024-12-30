@@ -47,9 +47,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle
 
-      - name: Build with Gradle (skip specific tests)
-        run: ./gradlew clean build -x test -Dtest.excludeTests="SocksBacksparkApplicationTests.testToDto,SocksBacksparkApplicationTests.testToEntity,SocksBacksparkApplicationTests.testToDtoList"
-
       - name: Run tests
         run: ./gradlew test
 
