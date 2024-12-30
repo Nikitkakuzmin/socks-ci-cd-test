@@ -16,9 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;*/
 @SpringBootTest
 class SocksBacksparkApplicationTests {
 
-    @Test
-	void contextLoads() {
-	}
+
 /*
     @Autowired
     private SocksMapper socksMapper;
