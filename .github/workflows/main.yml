@@ -77,7 +77,7 @@ jobs:
 
       - name: Test the running application
         run: |
-          curl -f http://localhost:9999 || exit 1  # Проверяем, что приложение работает
+          curl -f http://localhost:8888 || exit 1  # Проверяем, что приложение работает
 
 
 
