@@ -16,10 +16,10 @@ jobs:
       postgres:
         image: postgres:latest
         ports:
-          - 5432:5432
+          - 5432:5432  # Подключаем порт 5432 контейнера на 1001 порту хоста
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PASSWORD: qwe
           POSTGRES_DB: postgres
         options: >-
           --health-cmd="pg_isready -U postgres"
@@ -28,22 +28,18 @@ jobs:
           --health-retries=5
 
     steps:
-      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. Set permissions for Gradlew
       - name: Set permissions for Gradlew
         run: chmod +x ./gradlew
 
-      # 4. Cache Gradle packages
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
@@ -52,52 +48,26 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle
 
-      # 5. Run tests
-      - name: Run tests
-        run: ./gradlew test
+      - name: Build and run tests with Gradle
+        run: ./gradlew build test
 
-      # 6. Static code analysis (Checkstyle)
-      - name: Static code analysis (Checkstyle)
-        run: ./gradlew check
+      - name: Check if the application is running
+        run: curl -f http://localhost:8888 || exit 1
 
-      # 7. Build JAR file
-      - name: Build JAR file
-        run: ./gradlew bootJar
-
-      # 8. Upload JAR as artifact
-      - name: Upload JAR as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: socks-service-jar
-          path: build/libs/*.jar
-
-      # 9. Download artifact (socks-backspark.jar)
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: socks-service-jar
-          path: ./build/libs
-
-      # 10. Check if JAR file exists
-      - name: List files in build/libs
-        run: ls -al build/libs  # Проверка, что файл находится в папке
-
-      # 11. Run the application
-      - name: Run application
+      - name: Deploy application (run in background)
         run: |
+          # Запускаем приложение в фоновом режиме
           nohup java -jar build/libs/socks-backspark.jar > app.log 2>&1 &
-        
-      # 12. Wait for application to start
-      - name: Wait for application to start
-        run: sleep 60
+          
+          # Увеличиваем время ожидания, чтобы приложение успело запуститься
+          sleep 60
 
-      # 13. Check if application is running (using curl)
-      - name: Check if application is running
-        run: curl -f http://localhost:8888 || exit 1  # Проверка по порту 8888
+      - name: Check application logs
+        run: tail -n 10 app.log
 
-      # 14. Tail logs to check the application logs
-      - name: Tail application logs
-        run: tail -n 10 app.log  # Печатаем последние 10 строк лога
+      - name: Test the deployed application
+        run: curl -f http://localhost:8888 || exit 1  # Проверяем доступность приложения на порту 8888
+
 
 
 
