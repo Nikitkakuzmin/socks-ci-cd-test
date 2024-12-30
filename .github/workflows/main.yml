@@ -26,6 +26,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -56,6 +57,9 @@ jobs:
       - name: Build JAR file
         run: ./gradlew bootJar
 
+      - name: List files in build/libs
+        run: ls -al build/libs/
+
       - name: Upload JAR as artifact
         uses: actions/upload-artifact@v3
         with:
@@ -66,5 +70,13 @@ jobs:
         if: success()
         run: |
           echo "Deploying JAR file to server"
-          scp -i ${{ secrets.SSH_PRIVATE_KEY }} build/libs/*.jar user@172.20.10.2:/path/to/deploy/directory
-          ssh -i ${{ secrets.SSH_PRIVATE_KEY }} user@172.20.10.2 "java -jar /path/to/deploy/directory/socks-backspark.jar"
+          # Checking if the file exists before attempting to copy
+          if [ -f build/libs/*.jar ]; then
+            echo "JAR file found, proceeding with deployment"
+            scp -i ${{ secrets.SSH_PRIVATE_KEY }} build/libs/*.jar user@172.20.10.2:/path/to/deploy/directory
+            ssh -i ${{ secrets.SSH_PRIVATE_KEY }} user@172.20.10.2 "java -jar /path/to/deploy/directory/socks-backspark.jar"
+          else
+            echo "JAR file not found in build/libs/"
+            exit 1
+          fi
+
