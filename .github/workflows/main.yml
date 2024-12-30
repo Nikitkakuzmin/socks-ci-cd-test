@@ -73,10 +73,10 @@ jobs:
           chmod 600 /tmp/deploy_key
           
           # Копирование JAR файла на сервер
-          scp -i /tmp/deploy_key build/libs/*.jar user@192.168.97.4:/path/to/deploy/directory
+          scp -i /tmp/deploy_key build/libs/*.jar user@172.29.192.1:/path/to/deploy/directory
           
           # Запуск JAR файла на сервере
-          ssh -i /tmp/deploy_key user@192.168.97.4 "java -jar /path/to/deploy/directory/socks-backspark.jar"
+          ssh -i /tmp/deploy_key user@172.29.192.1 "java -jar /path/to/deploy/directory/socks-backspark.jar"
           
           # Удаление временного файла с приватным ключом
           rm /tmp/deploy_key
