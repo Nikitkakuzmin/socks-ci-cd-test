@@ -26,6 +26,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
+          
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -66,8 +67,21 @@ jobs:
         if: success()
         run: |
           echo "Deploying JAR file to server"
-          scp -i ${{ secrets.SSH_PRIVATE_KEY }} build/libs/*.jar user@172.20.10.2:/path/to/deploy/directory
-          ssh -i ${{ secrets.SSH_PRIVATE_KEY }} user@172.20.10.2 "java -jar /path/to/deploy/directory/socks-backspark.jar"
+          
+          # Создание временного файла с SSH ключом
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          
+          # Копирование JAR файла на сервер
+          scp -i /tmp/deploy_key build/libs/*.jar user@172.20.10.2:/path/to/deploy/directory
+          
+          # Запуск JAR файла на сервере
+          ssh -i /tmp/deploy_key user@172.20.10.2 "java -jar /path/to/deploy/directory/socks-backspark.jar"
+          
+          # Удаление временного файла с приватным ключом
+          rm /tmp/deploy_key
+          shell: /bin/bash
+
 
 
 
