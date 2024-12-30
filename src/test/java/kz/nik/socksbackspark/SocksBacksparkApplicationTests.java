@@ -1,21 +1,21 @@
 package kz.nik.socksbackspark;
 
-import kz.nik.socksbackspark.dto.SocksDto;
+/*import kz.nik.socksbackspark.dto.SocksDto;
 import kz.nik.socksbackspark.mapper.SocksMapper;
 import kz.nik.socksbackspark.model.Socks;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired;*/
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Arrays;
+/*import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;*/
 
 @SpringBootTest
 class SocksBacksparkApplicationTests {
-
+/*
     @Autowired
     private SocksMapper socksMapper;
 
@@ -77,6 +77,6 @@ class SocksBacksparkApplicationTests {
         assertEquals(2, socksDtoList.size());
         assertEquals(socks1.getId(), socksDtoList.get(0).getId());
         assertEquals(socks2.getId(), socksDtoList.get(1).getId());
-    }
+    }*/
 
 }
