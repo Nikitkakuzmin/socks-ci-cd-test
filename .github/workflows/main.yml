@@ -65,21 +65,19 @@ jobs:
 
       - name: Start Spring Boot application
         run: |
-          java -jar build/libs/socks-backspark.jar &
-          echo "Spring Boot application started."
+          nohup java -jar build/libs/socks-backspark.jar > app.log 2>&1 &  # Запускаем приложение в фоновом режиме
 
       - name: Wait for the application to start
         run: |
-          sleep 180  # Ждем, чтобы приложение успело загрузиться
+          sleep 60  # Увеличиваем время ожидания
+
+      - name: Tail logs to check if application is running
+        run: |
+          tail -n 10 app.log  # Выводим последние 10 строк лога
 
       - name: Test the running application
         run: |
           curl -f http://localhost:9999 || exit 1  # Проверяем, что приложение работает
-
-      - name: Clean up
-        run: |
-          pkill -f "java -jar build/libs/socks-backspark.jar"  # Убиваем процесс приложения
-
 
 
 
