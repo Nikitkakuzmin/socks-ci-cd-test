@@ -1,0 +1,73 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set permissions for Gradlew
+        run: chmod +x ./gradlew
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle
+
+      - name: Build with Gradle (skip specific tests)
+        run: ./gradlew clean build -x test -Dtest.excludeTests="SocksBacksparkApplicationTests.testToDto,SocksBacksparkApplicationTests.testToEntity,SocksBacksparkApplicationTests.testToDtoList"
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Static code analysis (Checkstyle)
+        run: ./gradlew check
+
+      - name: Build JAR file
+        run: ./gradlew bootJar
+
+      - name: Upload JAR as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: socks-service-jar
+          path: build/libs/*.jar
+
+      - name: Deploy to server
+        if: success()
+        run: |
+          echo "Deploying JAR file to server"
+          scp -i ${{ secrets.SSH_PRIVATE_KEY }} build/libs/*.jar user@172.20.10.2:/path/to/deploy/directory
+          ssh -i ${{ secrets.SSH_PRIVATE_KEY }} user@172.20.10.2 "java -jar /path/to/deploy/directory/socks-backspark.jar"
